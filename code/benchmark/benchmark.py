@@ -6,7 +6,6 @@ import os
 import signal
 import csv
 
-# Yol bilgileri
 SENDER_PATH = os.path.join("..", "sec", "sender.py")
 RECEIVER_PATH = os.path.join("..", "insec", "receiver.py")
 CSV_PATH = "benchmark_results.csv"
