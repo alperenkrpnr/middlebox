@@ -1,0 +1,2 @@
+Message,Delay(s),Trials,Mean Time(s),CI Lower,CI Upper,Capacity (bits/sec)
+Alperen's Covert Channel,0.3,10,10.608,10.212,11.004,18.10

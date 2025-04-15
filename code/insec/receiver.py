@@ -1,23 +1,26 @@
-import socket, os
+import socket
+import argparse
 
-def start_udp_listener():
-    # Create a UDP socket
+def start_udp_listener(port):
     sock = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
-    
-    # Bind the socket to the port
-    server_address = ( '', 8888)
-    sock.bind(server_address)
-    
-    print("UDP listener started on port 8888")
-    
+    sock.bind(("", port))
+    print(f"Receiver listening on UDP port {port}...")
+
+    decoded_message = ""
+
     while True:
         data, address = sock.recvfrom(4096)
-        print(f"Received {len(data)} bytes from {address}")
-        print(data.decode())
-        data = "Hi SecureNet!".encode()
-        if data:
-            sent = sock.sendto(data, address)
-            print(f"Sent {sent} bytes back to {address}")
+        src_ip = address[0]
+        try:
+            last_octet = int(src_ip.strip().split(".")[-1])
+            char = chr(last_octet)
+            decoded_message += char
+            print(f"Received from spoofed IP {src_ip} -> Decoded: '{char}' | Message so far: '{decoded_message}'")
+        except Exception as e:
+            print(f"Error decoding from {src_ip}: {e}")
 
 if __name__ == "__main__":
-    start_udp_listener()
+    parser = argparse.ArgumentParser()
+    parser.add_argument("--port", type=int, default=8888)
+    args = parser.parse_args()
+    start_udp_listener(args.port)

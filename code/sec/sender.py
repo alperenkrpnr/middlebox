@@ -1,36 +1,22 @@
 import os
-import socket
 import time
+import argparse
+from scapy.all import IP, UDP, send
 
-def udp_sender():
-    host = os.getenv('INSECURENET_HOST_IP')
-    port = 8888
-    message = "Hello, InSecureNet!"
-
-    if not host:
-        print("SECURENET_HOST_IP environment variable is not set.")
-        return
-
-    try:
-        # Create a UDP socket
-        sock = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
-
-        while True:
-            # Send message to the server
-            sock.sendto(message.encode(), (host, port))
-            print(f"Message sent to {host}:{port}")
-
-            # Receive response from the server
-            response, server = sock.recvfrom(4096)
-            print(f"Response from server: {response.decode()}")
-
-            # Sleep for 1 second
-            time.sleep(1)
-
-    except Exception as e:
-        print(f"An error occurred: {e}")
-    finally:
-        sock.close()
+def encode_and_send(msg, dst_ip, dst_port, delay):
+    for char in msg:
+        spoofed_ip = f"10.1.0.{ord(char)}"
+        pkt = IP(src=spoofed_ip, dst=dst_ip)/UDP(sport=12345, dport=dst_port)/b"covert"
+        send(pkt, verbose=False)
+        print(f"Sent char '{char}' as spoofed IP {spoofed_ip}")
+        time.sleep(delay)
 
 if __name__ == "__main__":
-    udp_sender()
+    parser = argparse.ArgumentParser()
+    parser.add_argument("--dst_ip", type=str, default=os.getenv("INSECURENET_HOST_IP", "10.0.0.21"))
+    parser.add_argument("--dst_port", type=int, default=8888)
+    parser.add_argument("--msg", type=str, default="Alperen's Covert Channel !?$#")
+    parser.add_argument("--delay", type=float, default=0.5, help="Delay between packets in seconds")
+    args = parser.parse_args()
+
+    encode_and_send(args.msg, args.dst_ip, args.dst_port, args.delay)
